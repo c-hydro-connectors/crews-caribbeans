@@ -1,0 +1,42 @@
+{
+  "flags": {
+    "flag":"false"
+  },
+  "template": {
+    "datetime_file_in": "%Y%m%d%H%M",
+    "datetime_folder_in": "%Y/%m/%d",
+    "datetime_file_out": "%Y%m%d%H%M",
+    "datetime_folder_out": "%Y/%m/%d"
+  },
+  "data": {
+    "static": {
+      "grid": "/home/silvestro/crews/data/static/radar_grid.txt",
+      "grid_spacing": null
+    },
+
+    "dynamic":{
+      "time": {
+        "steps_observed": 48,
+        "time_frequency": "30min"
+      },
+      "input_rad": {
+        "folder": "/home/silvestro/crews/data/outcome/radar/{datetime_folder_in}",
+        "filename": "{datetime_file_in}_raincumulated.tif",
+	"resolution":"30min"
+      },
+      "input_sat": {
+        "folder": "/home/silvestro/crews/data/outcome/satellite/gsmap_historical/{datetime_folder_in}",
+        "filename": "{datetime_file_in}_gsmap.tif",
+	"resolution":"60min"
+      },
+      "outcome":{
+        "folder": "/home/silvestro/crews/data/outcome/remote/{datetime_folder_out}",
+        "filename": "{datetime_file_out}_remote_rad_gsmap.tif"
+      }
+    },
+    "log": {
+      "folder": "/home/silvestro/crews/log/",
+      "filename": "crews_merge_to_remote_gsmap.log"
+    }
+  }
+}

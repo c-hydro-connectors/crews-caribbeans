@@ -1,0 +1,69 @@
+{
+  "flags": {
+  },
+  "template": {
+    "datetime_file_in": "%Y%m%d%H%M",
+    "datetime_folder_in": "%Y/%m/%d",
+    "datetime_file_out": "%Y%m%d%H%M",
+    "datetime_folder_out": "%Y/%m/%d",
+    "datetime_pluvio1": "%Y%m%d",
+    "datetime_pluvio2": "%H%M"
+  },
+  "data": {
+    "static": {
+      "grid": "/home/silvestro/crews/data/static/radar_grid.txt",
+      "grid_spacing": null,
+      "number_nearest_cells_sampling" : 25
+    },
+
+    "dynamic":{
+      "time": {
+        "steps_observed": 48,
+        "time_frequency": "30min"
+      },
+    "gauge": {
+        "drops2": {
+          "DropsAddress": "http://caribbean.mydewetra.cimafoundation.org/dds/rest",
+          "DropsUser": null,
+          "DropsPwd": null,
+          "DropsSensor": "PLUVIOMETRO",
+          "DropsGroup": "Dewetra%Caraibi",
+          "lon_left": -63.5,
+          "lon_right": -55.5,
+          "lat_top": 16.8,
+          "lat_bottom": 9.5,
+          "codes_not_valid": []
+        },
+        "scale_factor": 1,
+        "output":{
+          "folder": "/home/silvestro/crews/data/outcome/gauge/{outcome_sub_path_time}",
+          "filename": "{outcome_datetime}_gaugecumulated.txt"
+        }
+      },	
+      "input_rad": {
+        "folder": "/home/silvestro/crews/data/outcome/radar/{datetime_folder_in}",
+        "filename": "{datetime_file_in}_raincumulated.tif",
+	"resolution":"30min"
+      },
+      "input_sat": {
+        "folder": "/home/silvestro/crews/data/outcome/satellite/gsmap_historical/{datetime_folder_in}",
+        "filename": "{datetime_file_in}_gsmap.tif",
+	"resolution":"60min"
+      },
+      "input_pluv": {
+        "folder": "/home/silvestro/crews/data/ancillary/mcm/{datetime_folder_in}",
+        "filename": "raingauge_cell_value_{datetime_pluvio1}_{datetime_pluvio2}.txt",
+	"resolution":"30min"
+      },
+      "outcome":{
+        "folder": "/home/silvestro/crews/data/outcome/statistic/{datetime_folder_out}",
+        "filename": "{datetime_file_out}_statistic.txt"
+      }
+    },
+    "log": {
+      "folder": "/home/silvestro/crews/log/",
+      "filename": "crews_statistic.log"
+    }
+  }
+}
+

@@ -1,0 +1,59 @@
+{
+  "template": {
+    "source_gridded_sub_path_time": "%Y/%m/%d/",
+    "source_gridded_datetime": "%Y%m%d%H%M",
+    "source_point_sub_path_time": "%Y/%m/%d/",
+    "source_point_datetime": "%Y%m%d%H%M",
+    "outcome_sub_path_time": "%Y/%m/%d/",
+    "outcome_datetime": "%Y%m%d%H%M"
+    },
+  "data": {
+    "static": {
+      "filename" : "radar_grid.txt",
+      "folder": "/home/silvestro/crews/data/static/"
+    },
+    "dynamic": {
+      "time": {
+        "steps_observed": 48,
+        "time_frequency": "30min"
+      },
+      "gauge": {
+        "drops2": {
+          "DropsAddress": "http://caribbean.mydewetra.cimafoundation.org/dds/rest",
+          "DropsUser": null,
+          "DropsPwd": null,
+          "DropsSensor": "PLUVIOMETRO",
+          "DropsGroup": "Dewetra%Caraibi",
+          "lon_left": -63.5,
+          "lon_right": -55.5,
+          "lat_top": 16.8,
+          "lat_bottom": 9.5,
+          "codes_not_valid": []
+        },
+        "scale_factor": 1,
+        "output":{
+          "folder": "/home/silvestro/crews/data/outcome/gauge/{outcome_sub_path_time}",
+          "filename": "{outcome_datetime}_gaugecumulated.txt"
+        }
+      },
+      "radar": {
+        "local": {
+          "folder": "/home/silvestro/crews/data/outcome/radar/{source_gridded_sub_path_time}",
+          "filename": "{source_gridded_datetime}_rainrate.tif",
+          "time_frequency": "5min",
+          "max_valid": 400
+        },
+        "scale_factor": 0.083333333,
+        "output":{
+          "folder": "/home/silvestro/crews/data/outcome/radar/{outcome_sub_path_time}",
+          "filename": "{outcome_datetime}_raincumulated.tif"
+        }
+      }
+    },
+    "log": {
+      "filename": "crews_preprocessing.txt",
+      "folder": "/home/silvestro/crews/log/"
+    }
+  }
+}
+

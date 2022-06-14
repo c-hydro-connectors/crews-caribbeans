@@ -1,0 +1,47 @@
+{
+  "flags": {
+    "overwrite_existing": false,
+    "crop_bbox": true
+  },
+  "template": {
+    "datetime_file_in": "%Y%m%d%H%M",
+    "datetime_folder_in": "%Y/%m/%d",
+    "datetime_file_out": "%Y%m%d%H%M",
+    "datetime_folder_out": "%Y/%m/%d"
+  },
+  "data": {
+    "dynamic":{
+      "time": {
+        "steps_observed": 96,
+        "time_frequency": "30min"
+      },
+      "drops2": {
+        "DropsAddress": "http://130.251.104.19:8080/dds/rest",
+        "DropsUser": null,
+        "DropsPwd": null,
+        "DropsDataId": "GHE",
+        "DropsVarId": "GHE",
+        "DropsLevel": "-"
+      },
+      "satellite": {
+        "flip_lat": true,
+        "xaxis_0-360": false,
+        "additional_nulls": null,
+        "bbox": {
+          "lon_left": -64.0,
+          "lon_right": -55.0,
+          "lat_top": 17.0,
+          "lat_bottom": 9.0
+        }
+      },
+      "outcome":{
+        "folder": "/home/silvestro/crews/data/outcome/satellite/ghe_historical/{datetime_folder_out}",
+        "filename": "{datetime_file_out}_ghe.tif"
+      }
+    },
+    "log": {
+      "folder": "/home/silvestro/crews/log/",
+      "filename": "crews_import_satellite_ghe.log"
+    }
+  }
+}
