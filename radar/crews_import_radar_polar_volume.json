@@ -14,15 +14,15 @@
   },
   "data": {
     "static": {
-      "grid": "/home/silvestro/crews/data/static/radar_grid.txt",
+      "grid": "/mnt/storage/idrologia/data_static/mcm/radar_grid.txt",
       "grid_spacing": null
     },
     "dynamic":{
       "time": {
-        "time_observed_period_h": 96
+        "time_observed_period_h": 5
       },
       "input": {
-        "folder": "/DATA/cimh_ago_sett_2021",
+        "folder": "/mnt/storage/idrologia/data_dynamic/input/radar/polar_volume/{datetime_folder_in}",
         "filename": "{datetime_file_in}**00dBZ.vol",
         "elevations_to_consider": [0,1],
         "limits_elevation_km": [70],
@@ -39,18 +39,18 @@
         }
       },
       "output": {
-        "folder": "/home/silvestro/crews/data/outcome/radar/{datetime_folder_out}",
+        "folder": "/mnt/storage/idrologia/data_dynamic/output/radar/polar_volume/{datetime_folder_out}",
         "filename_nc": "{datetime_file_out}_rainrate.nc",
-	    "filename_tif": "{datetime_file_out}_rainrate.tif",
+	"filename_tif": "{datetime_file_out}_rainrate.tif",
         "format": "tif"
       },
       "ancillary": {
-        "folder": "/home/silvestro/crews/data/ancillary/radar/{datetime_folder_out}"
+        "folder": "/mnt/storage/idrologia/data_dynamic/ancillary/radar/polar_volume/{datetime_folder_out}"
       }
     },
     "log": {
-      "folder": "/home/silvestro/crews/log/",
-      "filename": "crews_import_radar.log"
+      "folder": "/home/idrologia/op_chain/log/",
+      "filename": "crews_import_radar_polar_volume.log"
     }
   }
 }
