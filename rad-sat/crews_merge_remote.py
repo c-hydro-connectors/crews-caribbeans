@@ -140,6 +140,7 @@ def main():
                 da_satellite = da_satellite/2
             except:
                 logging.warning("---> WARNING! Satellite map not exist" + time_now.strftime("%Y-%m-%d %H:%M"))
+                logging.info("FILE : " + file_now_sat)
                 da_satellite = griglia.copy()
                 da_satellite.values=np.zeros(griglia.shape)
         

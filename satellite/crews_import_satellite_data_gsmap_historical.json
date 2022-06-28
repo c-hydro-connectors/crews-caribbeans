@@ -35,12 +35,12 @@
         }
       },
       "outcome":{
-        "folder": "/home/silvestro/crews/data/outcome/satellite/gsmap_historical/{datetime_folder_out}",
+        "folder": "/mnt/storage/idrologia/data_dynamic/satellite/gsmap_historical/{datetime_folder_out}",
         "filename": "{datetime_file_out}_gsmap.tif"
       }
     },
     "log": {
-      "folder": "/home/silvestro/crews/log/",
+      "folder": "/home/idrologia/op_chain/log/",
       "filename": "crews_import_satellite_gsmap.log"
     }
   }

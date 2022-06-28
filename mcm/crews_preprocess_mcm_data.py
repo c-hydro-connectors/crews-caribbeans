@@ -95,6 +95,8 @@ def main():
             logging.info("--> Preparing rain gauge data...DONE")
         except:
             logging.warning("---> WARNING! No gauge at " + time_now_start.strftime("%Y-%m-%d %H:%M"))
+            folder_out_gauge = data_settings['data']['dynamic']['gauge']['output']['folder'].format(**template_filled)
+            filename_out_gauge = data_settings['data']['dynamic']['gauge']['output']['filename'].format(**template_filled)
             
         logging.info("--> Preparing radar data...")
         logging.info("---> Reading radar maps...")
@@ -179,7 +181,7 @@ def dload_drops_gauges(time_start, time_end,drops_settings):
 
         if (len(series>0)) and (date_to in series.keys()):
             df_pluvio_now.loc['value',col] = series.resample(drops_settings['frequency'], closed='right', label='right').agg(pd.DataFrame.sum)[date_to]
-            df_pluvio_now.loc['value',col] = series.resample(drops_settings['frequency'], closed='right', label='right')
+            # df_pluvio_now.loc['value',col] = series.resample(drops_settings['frequency'], closed='right', label='right')
         else:
             df_pluvio_now.loc['value', col] = np.nan
 

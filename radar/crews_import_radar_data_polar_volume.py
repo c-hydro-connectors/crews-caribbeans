@@ -31,6 +31,7 @@ import wradlib.georef as georef
 import xarray as xr
 import pickle
 import rioxarray
+import time as Time
 
 from pyresample.geometry import SwathDefinition
 from pyresample.kd_tree import resample_nearest
@@ -77,6 +78,7 @@ def main(): #main(path, in_dir, out_dir, plot, out_flag):
     date_range = pd.date_range(start_run, date_run, freq='5min')
     # -------------------------------------------------------------------------------------
     # Loop through dates
+    start_time = Time.time()
     for time_now in date_range:
         logging.info(" --> ###################################################")
         logging.info(" --> Computing time : " + time_now.strftime("%Y-%m-%d %H:%M"))
@@ -413,64 +415,36 @@ def main(): #main(path, in_dir, out_dir, plot, out_flag):
                 da_data.to_netcdf(os.path.join(folder_ancillary_now, time_now.strftime("%Y%m%d_%H%M") + "_gridded_radar_fields.nc"))
 
 
+    # -------------------------------------------------------------------------------------
+    # Info algorithm
+    time_elapsed = round(Time.time() - start_time, 1)
+
+    logging.info(' ')
+    logging.info(' ==> ' + alg_name + ' (Version: ' + alg_version + ' Release_Date: ' + alg_release + ')')
+    logging.info(' ==> TIME ELAPSED: ' + str(time_elapsed) + ' seconds')
+    logging.info(' ==> ... END')
+    logging.info(' ==> Bye, Bye')
+    logging.info(' ============================================================================ ')
+    # -------------------------------------------------------------------------------------
+
+# -------------------------------------------------------------------------------------
 
 
 
-
-        '''controlli ulteriori per togliere rumore sono:
-           1) fare verifica sulla verticale direzione (z) per dBZ. Se supera valore soglia di XXX, allora si rimuove il valore definendolo clutter.
-           Il problema è che fare i controlli sulla verticale con le elevazioni che partono ad angoli diversi, ma soprattutto hanno aperture diverse. 
-           Forse la soluzione è grigliare tutto e farlo a questo punto.
+'''controlli ulteriori per togliere rumore sono:
+1) fare verifica sulla verticale direzione (z) per dBZ. Se supera valore soglia di XXX, allora si rimuove il valore definendolo clutter.
+Il problema è che fare i controlli sulla verticale con le elevazioni che partono ad angoli diversi, ma soprattutto hanno aperture diverse. 
+Forse la soluzione è grigliare tutto e farlo a questo punto.
            
-           2) verifica su variabile V (velocità radiale)
-           Se la velocità è compresa tre -0.2 e 0.2, abbianta al controllo precedente, si considerano i pixel come ground clutter.
-           Anche qui si può passare prima dalla grigliatura, anche se perde un po' di senso essendo velocità radiale, ma vabbè
+2) verifica su variabile V (velocità radiale)
+Se la velocità è compresa tre -0.2 e 0.2, abbianta al controllo precedente, si considerano i pixel come ground clutter.
+Anche qui si può passare prima dalla grigliatura, anche se perde un po' di senso essendo velocità radiale, ma vabbè
            
-           Quindi ci sarebbe da aggiungere la lettura del *V.vol che è identica a *dBZ.vol stesse keys, senza fare la parte di process data.
-           Rigrigliare tutto per applicare 1 e 2
-           Fare solo ora la ZR trasnform
-           salvare prodotto finale (che potrà essere la seconda elevazione o combinazione delle varie)
-        '''
-
-            ########################################################
-            # non ho toccato nulla
-            # radar_site = (float(lon),float(lat),330)
-            #
-            # proj_wgs84 = georef.epsg_to_osr(4326)
-            #
-            # da = wrl.georef.create_xarray_dataarray(data_rain, r=r*1000, phi=azi, theta=np.ones(len(azi)) * float(elev_angle), \
-            #                                          site=radar_site, proj='cg')
-            #
-            #
-            # #proj_wgs84 = georef.epsg_to_osr(4326)
-            # da = wrl.georef.georeference_dataset(da, proj=proj_wgs84)
-            # #da_mod = xr.DataArray(da.values ,coords={"lat": (["y","x"], da.y.values),
-            # #              "lon": (["y","x"], da.x.values)}, dims=["y","x"], name="dbz")
-            #
-            # lon_grid, lat_grid = np.meshgrid(np.arange(np.min(da.x.values),np.max(da.x.values), data_settings["data"]["dynamic"]["output"]["grid_spacing"]), np.arange(np.min(da.y.values), np.max(da.y.values), data_settings["data"]["dynamic"]["output"]["grid_spacing"]))
-            # lat_grid = np.flipud(lat_grid)
-            #
-            # def_a = SwathDefinition(lons=lon_grid, lats=lat_grid)
-            # def_b = SwathDefinition(lons=da.x.values, lats=da.y.values)
-            # interp_dat = resample_nearest(def_b, da.values, def_a, radius_of_influence=7000, fill_value=-9999)
-            #
-            # da_mod = xr.DataArray(interp_dat ,coords={"lat": np.unique(lat_grid),
-            #               "lon": np.unique(lon_grid)}, dims=["lat","lon"], name="dbz")
-            #
-            # template_filled["elev_angle"] = elev_angle
-            # folder_out_now = data_settings["data"]["dynamic"]["output"]["folder"].format(**template_filled)
-            # os.makedirs(folder_out_now,exist_ok = True)
-            # file_out_now = data_settings["data"]["dynamic"]["output"]["filename"].format(**template_filled)
-            #
-            # da_mod.to_netcdf(os.path.join(folder_out_now,file_out_now))
-            ########################################################
-
-
-
-
-
-
-
+Quindi ci sarebbe da aggiungere la lettura del *V.vol che è identica a *dBZ.vol stesse keys, senza fare la parte di process data.
+Rigrigliare tutto per applicare 1 e 2
+Fare solo ora la ZR trasnform
+salvare prodotto finale (che potrà essere la seconda elevazione o combinazione delle varie)
+'''
 # -------------------------------------------------------------------------------------
 
 # -------------------------------------------------------------------------------------
