@@ -2,7 +2,7 @@
 
 #-----------------------------------------------------------------------------------------
 # Script information
-script_name='LAUNCHER - MULTI SATELLITE DOWNLOADER'
+script_name='LAUNCHER - MERGE REMOTE PRODUCTS'
 script_version="1.0.0"
 script_date='2022/06/14'
 
@@ -10,10 +10,11 @@ Help()
 {
    # Display Help
    echo "---------------------------------------------------"
-   echo "Download multiple satellite product for real-time purposes"
+   echo "Download multiple satellite product for historicla analysis"
    echo
-   echo "Syntax: ./launcher_sat_download_rt.sh --satellite {sat_name}"
+   echo "Syntax: ./launcher_merge_remote_rt.sh --satellite {sat_name} --radar {radar_type}"
    echo "{sat_name} available: ghe, gsmap"
+   echo "{radar_type} available: polar_volume, rainfall_map"
    echo "---------------------------------------------------"
 }
 #-----------------------------------------------------------------------------------------
@@ -29,13 +30,20 @@ file_lock_init=true
 # Managing inputs
 if [ $1 == "--satellite" ];
     then type=$2; 
-    echo " --> Download satellite product: "$type
+    echo " --> Use satellite product: "$type
 elif  [ $1 == "-h" ]; 
     then Help
     exit
 else
     echo " --> ERROR! Incorrect parameter/s provided. Use flag -h for help!"
     exit
+fi
+if [ $3 == "--radar" ];
+    then radar_type=$4;
+    echo " --> Use radar type: "$radar_type
+else
+    radar_type="rainfall_map";
+    echo " --> --radar setting not correctly specified. rainfall_map product will be considered!"
 fi
 #-----------------------------------------------------------------------------------------
 
@@ -45,8 +53,8 @@ virtualenv_folder='/home/silvestro/fp_virtualenv_python3_hyde/'
 virtualenv_name='wradlib'
 
 script_folder=$system_library_folder'crews-caribbeans'
-script_file=$script_folder'/satellite/crews_import_satellite_data.py'
-settings_file=/home/silvestro/MSPG/op_chain/preprocessing/satellite/crews_import_satellite_data_$type.json
+script_file=$script_folder'/rad-sat/crews_merge_remote.py'
+settings_file=/home/silvestro/MSPG/op_chain/processing/crews_merge_remote_${type}_rt_${radar_type}.json
 
 # Get information (-u to get gmt time)
 time_now=$(date -u +"%Y-%m-%d %H:%M")
@@ -55,6 +63,14 @@ year=${time_now:0:4}
 month=${time_now:5:2}
 day=${time_now:8:2}
 hour=${time_now:11:2}
+mins=${time_now:14:2}
+
+if [ $mins -ge 30 ]
+then
+time_now=$(date -u +"%Y-%m-%d %H:30")
+else
+time_now=$(date -u +"%Y-%m-%d %H:00")
+fi
 #-----------------------------------------------------------------------------------------
 
 #-----------------------------------------------------------------------------------------

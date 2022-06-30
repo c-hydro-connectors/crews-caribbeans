@@ -10,11 +10,11 @@
   "data": {
     "static": {
       "filename" : "radar_grid.txt",
-      "folder": "/home/silvestro/crews/data/static/"
+      "folder": "/DATA/crews/data_static/mcm/"
     },
     "dynamic": {
       "time": {
-        "steps_observed": 48,
+        "steps_observed": 1,
         "time_frequency": "30min"
       },
       "gauge": {
@@ -32,28 +32,28 @@
         },
         "scale_factor": 1,
         "output":{
-          "folder": "/home/silvestro/crews/data/outcome/gauge/{outcome_sub_path_time}",
+          "folder": "/DATA/crews/data_dynamic/gauge/{outcome_sub_path_time}",
           "filename": "{outcome_datetime}_gaugecumulated.txt"
         }
       },
       "radar": {
         "local": {
-          "folder": "/home/silvestro/crews/data/outcome/radar/{source_gridded_sub_path_time}",
+          "folder": "/DATA/crews/data_dynamic/radar/rainfall_map/{source_gridded_sub_path_time}",
           "filename": "{source_gridded_datetime}_rainrate.tif",
-          "time_frequency": "5min",
+          "time_frequency": "6min",
           "max_valid": 400
         },
         "min_step_acceptable": 4,
-        "scale_factor": 0.083333333,
+        "scale_factor": 0.1,
         "output":{
-          "folder": "/home/silvestro/crews/data/outcome/radar/{outcome_sub_path_time}",
+          "folder": "/DATA/crews/data_dynamic/radar/rainfall_map/{outcome_sub_path_time}",
           "filename": "{outcome_datetime}_raincumulated.tif"
         }
       }
     },
     "log": {
-      "filename": "crews_preprocessing.txt",
-      "folder": "/home/silvestro/crews/log/"
+      "filename": "crews_preprocessing_mcm.txt",
+      "folder": "/home/silvestro/MSPG/op_chain/log/"
     }
   }
 }

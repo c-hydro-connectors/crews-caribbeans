@@ -1,0 +1,119 @@
+{
+  "algorithm": {
+    "flags": {
+      "sources": {
+        "use_drops2": false,
+        "use_timeseries": false,
+        "use_point_data": true,
+        "non_standard_tab_fields": true
+      },
+      "mcm": {
+        "fixed_correlation": false,
+        "dynamic_correlation": true
+      },
+      "save_griso_ancillary_maps": false,
+      "save_figures": false,
+      "raise_error_if_no_station_available": false,
+      "compressed_gridded_input": false,
+      "compress_output": false,
+      "overwrite_existing": true,
+      "debug_mode": false
+    },
+    "general": {
+      "title": "Modified Coonditional Merging - Radar",
+      "web-site": "",
+      "source": "Python library developed by CIMA Research Foundation",
+      "history": "2.1.0 [20210602]",
+      "project-info": "Hydrological Data Engines - HyDE Library/Project",
+      "algorithm": "Data dynamic tool developed by CIMA Research Foundation"
+    },
+    "template": {
+      "source_gridded_sub_path_time": "%Y/%m/%d/",
+      "source_gridded_datetime": "%Y%m%d%H%M",
+      "source_point_sub_path_time": "%Y/%m/%d/",
+      "source_point_datetime": "%Y%m%d%H%M",
+      "outcome_sub_path_time": "%Y/%m/%d/",
+      "outcome_datetime": "%Y%m%d%H%M"
+    },
+    "settings": {
+      "radius_GRISO_km": 15
+    }
+  },
+  "data": {
+    "dynamic": {
+      "time": {
+        "time_observed_period": 1,
+        "time_forecast_period": 0,
+        "time_frequency": "H"
+      },
+      "source_gridded": {
+        "filename": "{source_gridded_datetime}_remote_rad_gsmap.tif",
+        "folder": "/DATA/crews/data_dynamic/remote/rainfall_map/gsmap/{source_gridded_sub_path_time}",
+        "file_type": "tif",
+        "nc_settings": {
+          "var_name": "precip",
+          "lat_name": "lat",
+          "lon_name": "lon"
+        }
+      },
+      "source_stations": {
+        "drops2": {
+          "DropsAddress": "http://caribbean.mydewetra.cimafoundation.org/dds/rest",
+          "DropsUser": null,
+          "DropsPwd": null,
+          "DropsSensor": "PLUVIOMETRO",
+          "DropsGroup": "Dewetra%Caraibi",
+          "lon_left": -64.0,
+          "lon_right": -55.0,
+          "lat_top": 17.0,
+          "lat_bottom": 9.0,
+          "codes_not_valid": []
+        },
+        "time_series": {
+          "coordinates_file": {
+            "filename" : "coordinates.txt",
+            "folder": "/home/andrea/CIMA/DEVELOPEMENT/conditional_merging/data_dynamic/outcome/obs/time_series/",
+            "delimiter": ",",
+            "station_name_col": 0,
+            "lat_col": 1,
+            "lon_col": 2
+          },
+          "data_files": {
+            "filename" : "{station_name}.txt",
+            "folder": "/home/andrea/CIMA/DEVELOPEMENT/conditional_merging/data_dynamic/outcome/obs/time_series/data/",
+            "delimiter": ",",
+            "datetime_col": 0,
+            "data_col": 1
+          }
+        },
+        "point_files":{
+          "filename" : "{source_point_datetime}_gaugecumulated.txt",
+          "folder": "/DATA/crews/data_dynamic/gauge/{source_point_sub_path_time}",
+          "non_standard_tab_fields": {
+            "separator": ",",
+            "header": true,
+            "latitude": "lat",
+            "longitude": "lon",
+            "data": "value",
+            "station_name": "name",
+            "station_code": null
+          }
+        }
+      }
+    },
+    "ancillary": {
+      "filename": "griso_stations_{outcome_datetime}.nc",
+      "folder": "/DATA/crews/data_dynamic/mspg/ancillary/{outcome_sub_path_time}"
+    },
+    "outcome": {
+      "format": "tif",
+      "filename": "mspg_{outcome_datetime}.tif",
+      "folder": "/DATA/crews/data_dynamic/mspg/outcome/{outcome_sub_path_time}"
+    },
+    "log": {
+      "filename": "crews_conditional_merging.txt",
+      "folder": "/home/silvestro/MSPG/op_chain/log/"
+    }
+  }
+}
+

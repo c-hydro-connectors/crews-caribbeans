@@ -107,313 +107,43 @@ def main(): #main(path, in_dir, out_dir, plot, out_flag):
             logging.error("ERROR! File " + file_in_now_raw + " not found")
             #raise FileNotFoundError
             presenceZ=0
-            
-        
-        
+
         if presenceZ>0:
             
-            try:
-                filename_V = filename.replace("dBZ", "V")
-                file_in_now = glob.glob(filename_V)[0]
-                logging.info(" ---> File " + os.path.basename(file_in_now) + " found!")
-                rbdict_V = wrl.io.read_rainbow(filename_V)   
-                presenceV=1
-            except:
-                logging.error("ERROR! File " + filename_V + " not found")
-                #raise FileNotFoundError
-                presenceV=0
+            #Conversion of the maps (to be revised)
+            data_rain_bin = rbdict['product']['data']['radarpicture']['datamap']['data']
+            step = (float(rbdict['product']['data']['radarpicture']['@max']) - float(rbdict['product']['data']['radarpicture']['@min']))/254
+            data_rain = (data_rain_bin * step) + float(rbdict['product']['data']['radarpicture']['@min'])
+            data_rain[data_rain<0]=0
 
-            '''
-            try:
-                filename_W = filename.replace("dBZ", "W")
-                file_in_now = glob.glob(filename_W)[0]
-                logging.info(" ---> File " + os.path.basename(file_in_now) + " found!")
-                rbdict_W = wrl.io.read_rainbow(filename_W)  
-                presenceW=1
-            except IndexError:
-                logging.error("ERROR! File " + filename_W + " not found")
-                #raise FileNotFoundError
-                presenceW=0
-            '''
-            
-            #vol = wrl.io.open_rainbow_dataset(filename, reindex_angle=False)
-            #swp = vol[0].copy().pipe(wrl.georef.georeference_dataset)
-            
-            
-            
-            ###############################################################
-            #Get total scans
-            tot_scans = len(rbdict['volume']['scan']['slice'])
-            considered_scans = [str(rbdict['volume']['scan']['slice'][i]['posangle']) for i in data_settings["data"]["dynamic"]["input"]["elevations_to_consider"]]
-            scans_data = {}
+            lon = rbdict['product']['data']['sensorinfo']['lon']
+            lat = rbdict['product']['data']['sensorinfo']['lat']
+            alt = rbdict['product']['data']['sensorinfo']['alt']
 
-            logging.info(" ---> Reading radar information")
-            # Get annotation data
-            unit = rbdict['volume']['scan']['slice'][0]['slicedata']['rawdata']['@type']
-            time = rbdict['volume']['scan']['slice'][0]['slicedata']['@time']
-            date = rbdict['volume']['scan']['slice'][0]['slicedata']['@date']
-            lon = rbdict['volume']['radarinfo']['@lon']
-            lat = rbdict['volume']['radarinfo']['@lat']
-            alt = rbdict['volume']['radarinfo']['@lat']
-            sensorname = rbdict['volume']['radarinfo']['name']
-            logging.info(" ---> Reading radar information...DONE!")
+            ######### griglia proiezione e plot #########
+            logging.info(" ---> Gridding and reprojecting")
+            radar_location = (float(lon), float(lat), float(alt)) # (lon, lat, alt) in decimal degree and meters
+            lat_max = float(rbdict['product']['data']['radarpicture']['projection']['@lat_ul'])
+            lat_min = float(rbdict['product']['data']['radarpicture']['projection']['@lat_lr'])
+            lon_max = float(rbdict['product']['data']['radarpicture']['projection']['@lon_lr'])
+            lon_min = float(rbdict['product']['data']['radarpicture']['projection']['@lon_ul'])
 
-            # per tutte le elevazioni
-            #for i in range (tot_scans):
-            for i in data_settings["data"]["dynamic"]["input"]["elevations_to_consider"]:
+            x = np.linspace(lon_min, lon_max, num=int(rbdict['product']['data']['radarpicture']['projection']['@size_x']))
+            y = np.linspace(lat_min, lat_max, num=int(rbdict['product']['data']['radarpicture']['projection']['@size_y']))
 
-                #Get reflectivity data
-                elev_angle = str(rbdict['volume']['scan']['slice'][i]['posangle'])
-                logging.info(" ---> Comupute elevation angle " + elev_angle)
-                logging.info(" ---> Load data")
-                data = rbdict['volume']['scan']['slice'][i]['slicedata']['rawdata']['data']
-                datadepth = float(rbdict['volume']['scan']['slice'][i]['slicedata']['rawdata']['@depth'])
-                datamin = float(rbdict['volume']['scan']['slice'][i]['slicedata']['rawdata']['@min'])
-                datamax = float(rbdict['volume']['scan']['slice'][i]['slicedata']['rawdata']['@max'])
-                data = datamin + data * (datamax - datamin) / 2 ** datadepth
-                if presenceV>0:
-                    data_V = rbdict_V['volume']['scan']['slice'][i]['slicedata']['rawdata']['data']
-                    data_V = datamin + data_V * (datamax - datamin) / 2 ** datadepth
-
-                #Get azimuthal data
-                azi = rbdict['volume']['scan']['slice'][i]['slicedata']['rayinfo'][0]['data']
-                azidepth =  float(rbdict['volume']['scan']['slice'][i]['slicedata']['rayinfo'][0]['@depth'])
-                azirange = float(rbdict['volume']['scan']['slice'][i]['slicedata']['rayinfo'][0]['@rays'])
-                azi =  azi * azirange / 2 ** azidepth
-                #azirange = 360.0 #wrong parameter for 2hn and 3rd override
-                if i != data_settings["data"]["dynamic"]["input"]["elevations_to_consider"][0]:
-                    if not float(rbdict['volume']['scan']['slice'][i]['slicedata']['rayinfo'][0]['@rays'])==360:
-                        azi=azi*360/azirange
-                        logging.info(" ---> Modified azi elevation angle " + elev_angle)
-                logging.info(" ---> Load data..DONE!")    
-
-
-
-
-                # Create range array
-                logging.info(" ---> Prepare data " + elev_angle)
-                stoprange = float(rbdict['volume']['scan']['slice'][i]['stoprange'])
-                oDate = datetime.datetime.strptime(date, '%Y-%m-%d')
-                rangestep = float(rbdict['volume']['scan']['slice'][i]['rangestep'])
-                bins = float(rbdict['volume']['scan']['slice'][i]['slicedata']['rawdata']['@bins'])
-                r = np.arange(rangestep, (bins*rangestep+rangestep), rangestep)
-
-                scans_data[elev_angle] = {"azi":azi, "r":r, "data":data}
-                logging.info(" ---> Prepare data..DONE!")
-
-
-                ######### process data #########
-                logging.info(" ---> Filter data")
-                # simple filter on dbZ
-                data_old=data
-                data[data<20]=-20
-
-
-                # declutter statico
-
-
-                # Gabella clutter identification by wradlib
-                clmap = clmap_gabella(data)
-                data_no_clutter = wrl.ipol.interpolate_polar(data, clmap)
-
-
-                # Attenutation: Modified Kraemer          
-                '''pia_mkraemer = mod_kramer_attenuation(data_no_clutter)
-                data_corrected = data_no_clutter+pia_mkraemer
-                data_corrected[data_corrected<20]=-20
-                '''
-                data_corrected = data_no_clutter
-                data_corrected[data_corrected<20]=-20
-                
-                logging.info(" ---> Filter data..DONE!")
-
-                '''
-                #ZR transformation
-                data_rain = wrl.zr.z_to_r(wrl.trafo.idecibel(data_corrected), a=200., b=1.6)
-                '''
-
-                if data_settings["flags"]["plot_figures"]:
-                    ######### plot polari #########
-                    fig = pl.figure(figsize=(20, 10))
-                    ax = fig.add_subplot(321)
-                    ax, pm = wrl.vis.plot_ppi(data_old, r=r, az=azi, ax=ax)
-                    pm.set_clim(-20, 60)
-                    cb = pl.colorbar(pm, shrink=0.8)
-                    ax.set_title('data original')
-                    ax = fig.add_subplot(322)
-                    ax, pm = wrl.vis.plot_ppi(data, r=r, az=azi, ax=ax)
-                    pm.set_clim(-20, 60)
-                    cb = pl.colorbar(pm, shrink=0.8)
-                    ax.set_title('data filtered')
-                    ax = fig.add_subplot(323)
-                    ax, pm = wrl.vis.plot_ppi(data_no_clutter, r=r, az=azi, ax=ax)
-                    pm.set_clim(-20, 60)
-                    cb = pl.colorbar(pm, shrink=0.8)
-                    ax.set_title('no clutter')
-                    ax = fig.add_subplot(324)
-                    ax, pm = wrl.vis.plot_ppi(data_corrected, r=r, az=azi, ax=ax)
-                    pm.set_clim(0, 60)
-                    cb = pl.colorbar(pm, shrink=0.8)
-                    ax.set_title('data corrected')
-                    '''ax = fig.add_subplot(325)
-                    ax, pm = wrl.vis.plot_ppi(data_rain, r=r, az=azi, ax=ax)
-                    pm.set_clim(0, 40)
-                    cb = pl.colorbar(pm, shrink=0.8)
-                    ax.set_title('rainfall rate')'''
-                    pl.savefig(os.path.join(folder_ancillary_now, time_now.strftime("%Y_%m_%d_%H_%M_") + elev_angle + ".png"))
-                    pl.close()
-
-                ######### griglia proiezione e plot #########
-                logging.info(" ---> Gridding and reprojecting")
-                radar_location = (float(lon), float(lat), float(alt)) # (lon, lat, alt) in decimal degree and meters
-                elevation = float(elev_angle) # in degree
-                polargrid = np.meshgrid(r*1000, azi)
-                coords, rad = wrl.georef.spherical_to_xyz(polargrid[0], polargrid[1],
-                                                  elevation, radar_location)
-                x = coords[..., 0]
-                y = coords[..., 1]
-                EPSG = wrl.georef.epsg_to_osr(4326)
-                EPSG_coords = wrl.georef.reproject(coords, projection_source=rad,projection_target=EPSG)
-
-                x = EPSG_coords[..., 0]   #add andrea
-                y = EPSG_coords[..., 1]   #add andrea
-                xy_cols = np.concatenate([x.ravel()[:, None], y.ravel()[:, None]], axis=1)
-
-                if i == data_settings["data"]["dynamic"]["input"]["elevations_to_consider"][0]:
-                    if data_settings["data"]["static"]["grid"] is not None:
-                        grid_radar = rioxarray.open_rasterio(data_settings["data"]["static"]["grid"])
-                        xgrid = grid_radar.x.values
-                        ygrid = grid_radar.y.values[::-1]
-                    elif data_settings["data"]["static"]["grid_spacing"] is not None:
-                        xgrid = np.arange(x.min(), x.max(), data_settings["data"]["static"]["grid_spacing"])
-                        ygrid = np.arange(y.min(), y.max(), data_settings["data"]["static"]["grid_spacing"])
-                    else:
-                        raise ValueError("Either a base grid or the grid spacing should be provided, verify the info file")
-                    #xgrid = np.arange(np.round(x.min(), -3), np.round(x.max(), -3), int(rangestep * 1000))
-                    #ygrid = np.arange(np.round(y.min(), -3), np.round(y.max(), -3), int(rangestep * 1000))
-
-                    grid_xy = np.meshgrid(xgrid, ygrid)
-                    grid_xy_cols = np.vstack((grid_xy[0].ravel(), grid_xy[1].ravel())).transpose()
-
-
-                gridded = wrl.comp.togrid(xy_cols, grid_xy_cols, (1000*bins*rangestep+rangestep), np.array([x.mean(), y.mean()]), data_corrected.ravel(), wrl.ipol.Idw)
-                gridded = np.ma.masked_invalid(gridded).reshape((len(ygrid), len(xgrid)))
-                if presenceV>0:
-                    gridded_V = wrl.comp.togrid(xy_cols, grid_xy_cols, (1000*bins*rangestep+rangestep), np.array([x.mean(), y.mean()]), data_V.ravel(), wrl.ipol.Idw)
-                    gridded_V = np.ma.masked_invalid(gridded_V).reshape((len(ygrid), len(xgrid)))
-
-                if data_settings["flags"]["plot_figures"] is True:
-                    fig = pl.figure(figsize=(10,8))
-                    ax = pl.subplot(111, aspect="equal")
-                    pm = pl.pcolormesh(xgrid, ygrid, gridded)
-                    pl.colorbar(pm, shrink=0.75)
-                    pl.xlabel("Lon (°)")
-                    pl.ylabel("Lat (°)")
-                    pl.xlim(min(xgrid), max(xgrid))
-                    pl.ylim(min(ygrid), max(ygrid))
-                    pl.savefig(os.path.join(folder_ancillary_now, "gridded_volume_" + time_now.strftime("%Y_%m_%d_%H_%M_") + elev_angle + ".png"))
-                    pl.close()
-                    
-                    if presenceV>0:
-                        fig = pl.figure(figsize=(10,8))
-                        ax = pl.subplot(111, aspect="equal")
-                        pm = pl.pcolormesh(xgrid, ygrid, gridded_V)
-                        pl.colorbar(pm, shrink=0.75)
-                        pl.xlabel("Lon (°)")
-                        pl.ylabel("Lat (°)")
-                        pl.xlim(min(xgrid), max(xgrid))
-                        pl.ylim(min(ygrid), max(ygrid))
-                        pl.savefig(os.path.join(folder_ancillary_now, "gridded_velocity_" + time_now.strftime("%Y_%m_%d_%H_%M_") + elev_angle + ".png"))
-                        pl.close()
-                        
-                if i == data_settings["data"]["dynamic"]["input"]["elevations_to_consider"][0]:
-                    data_regridded = np.nan * np.ones((len(considered_scans),len(ygrid),len(xgrid)))
-                    data_regridded_V = data_regridded.copy()
-
-                    da_data = xr.DataArray(data_regridded, coords={"elev": considered_scans, "lat": np.unique(ygrid),
-                                                     "lon": np.unique(xgrid)}, dims=["elev","lat", "lon"], name="reflectivity")
-                    if presenceV>0:
-                        da_data_V = xr.DataArray(data_regridded_V, coords={"elev": considered_scans, "lat": np.unique(ygrid),
-                                                                       "lon": np.unique(xgrid)}, dims=["elev", "lat", "lon"], name="polar_volume")
-
-                da_data.loc[elev_angle,:,:] = gridded
-                if presenceV>0:
-                    da_data_V.loc[elev_angle, :, :] = gridded_V
-                logging.info(" ---> Gridding and reprojecting..DONE!")
-                logging.info(" ---> Comupute elevation angle " + elev_angle + "..DONE!")
-
-            ## Ground declutter
-            if len(data_settings["data"]["dynamic"]["input"]["elevations_to_consider"])>1 and \
-                    data_settings["data"]["dynamic"]["input"]["processing"]["ground_declutter"]["execute"] and presenceV>0:
-                logging.info(" --> Execute ground decluttering...")
-                gr_declutter_settings = data_settings["data"]["dynamic"]["input"]["processing"]["ground_declutter"]
-                grid_0 = da_data[0, :, :].values
-                grid_1 = da_data[1, :, :].values
-                vel_0 = da_data_V[0, :, :].values
-
-                da_data[0, :, :] = np.where(((grid_0 - grid_1) > gr_declutter_settings["elev_diff_th"]) & (
-                            np.abs(vel_0) < gr_declutter_settings["radial_velocity_th"]), -20, grid_0)
-                logging.info(" --> Execute ground decluttering...DONE!")
-
-            ## Mosaic results
-            logging.info(" --> Mosaic levels...")
-            mosaic_data = da_data[0, :, :].values
-            center_x = np.min(grid_xy[0]) + ((np.max(grid_xy[0]) - np.min(grid_xy[0]))/2)
-            center_y = np.min(grid_xy[1]) + ((np.max(grid_xy[1]) - np.min(grid_xy[1])) / 2)
-            dist_matrix = np.sqrt((grid_xy[0]-center_x)**2 +  (grid_xy[1]-center_y)**2)
-
-            for lev,th in enumerate(data_settings["data"]["dynamic"]["input"]["limits_elevation_km"], start=1):
-                th_deg = kilometers2degrees(th)
-                mosaic_data = np.where(dist_matrix<th_deg, da_data[lev, :, :].values, mosaic_data)
-            logging.info(" --> Mosaic levels...DONE")
-
-            ## Convert Z to R
-            logging.info(" --> Calculate rainfall...")
-            z_to_r_coeff = data_settings["data"]["dynamic"]["input"]["processing"]["z_to_r"]
-            Z = 10**(mosaic_data/10)
-            R = ((10**(mosaic_data/10))/z_to_r_coeff["a_coeff"]) ** (1/z_to_r_coeff["b_coeff"])
-            logging.info(" --> Calculate rainfall...DONE")
-
-            ## Save output
             logging.info(" --> Save output and closing...")
-            da_rain = xr.DataArray(R, coords={"lat": np.unique(ygrid), "lon": np.unique(xgrid)}, dims=["lat", "lon"], name="rain_rate")
-            ###file_out_now = (data_settings["data"]["dynamic"]["output"]["filename"]+"."+data_settings["data"]["dynamic"]["output"]["format"]).format(**template_filled)
-
-            if data_settings["flags"]["plot_figures"] is True:
-                fig = pl.figure(figsize=(10, 8))
-                ax = pl.subplot(111, aspect="equal")
-                pm = pl.pcolormesh(xgrid, ygrid, da_rain.values)
-                pl.colorbar(pm, shrink=0.75)
-                pl.xlabel("Lon (°)")
-                pl.ylabel("Lat (°)")
-                pl.xlim(min(xgrid), max(xgrid))
-                pl.ylim(min(ygrid), max(ygrid))
-                pl.savefig(os.path.join(folder_ancillary_now,
-                                        "rain_rate_" + time_now.strftime("%Y_%m_%d_%H_%M_") + ".png"))
-                pl.close()
-                
             if data_settings["data"]["dynamic"]["output"]["format"] == "tif":
                 file_out_now = folder_out_now + '/' + data_settings["data"]["dynamic"]["output"]["filename_tif"].format(**template_filled)
-                da_rain_tif = xr.DataArray(np.flipud(da_rain.values), dims=["y","x"], coords={"x":da_rain.lon.values,"y":da_rain.lat.values[::-1]}).rio.write_crs("epsg:4326", inplace=True)
+                #da_rain_bin_tif = xr.DataArray(np.flipud(data_rain_bin), dims=["y","x"], coords={"x":x,"y":y}).rio.write_crs("epsg:4326", inplace=True)
+                da_rain_tif = xr.DataArray(np.flipud(data_rain), dims=["y","x"], coords={"x":x,"y":y}).rio.write_crs("epsg:4326", inplace=True)
                 da_rain_tif.rio.to_raster(file_out_now, compress="DEFLATE", dtype="float32")
+                #da_rain_bin_tif.rio.to_raster(file_out_now + '_bin', compress="DEFLATE", driver='GTiff', dtype="float32")
             elif data_settings["data"]["dynamic"]["output"]["format"] == "netcdf":
                 file_out_now = folder_out_now + '/' + data_settings["data"]["dynamic"]["output"]["filename_nc"].format(**template_filled)
-                da_rain.to_netcdf(os.path.join(folder_out_now, file_out_now))
+                xr.DataArray(np.flipud(data_rain), dims=["lat","lon"], coords={"lon":x,"lat":y}).to_netcdf(os.path.join(folder_out_now, file_out_now))
             else:
                 logging.error("ERROR! Only tif and netcdf output types supported!")
                 raise NotImplementedError
-
-            if data_settings["flags"]["compress_output"]:
-                os.system('gzip ' + os.path.join(folder_out_now, file_out_now))
-
-            if data_settings["flags"]["clean_ancillary"]:
-                os.system('rm -r ' + folder_ancillary_now + " | True")
-            else:
-                # Save raw scans data (for reading: with open('filename.pickle', 'rb') as handle: b = pickle.load(handle))
-                with open(os.path.join(folder_ancillary_now, time_now.strftime("%Y%m%d_%H%M") + '_radar_raw.pickle'), 'wb') as handle:
-                    pickle.dump(scans_data, handle, protocol=pickle.HIGHEST_PROTOCOL)
-                da_data.to_netcdf(os.path.join(folder_ancillary_now, time_now.strftime("%Y%m%d_%H%M") + "_gridded_radar_fields.nc"))
-
 
     # -------------------------------------------------------------------------------------
     # Info algorithm
