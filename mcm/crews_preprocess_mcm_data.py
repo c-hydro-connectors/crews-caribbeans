@@ -121,7 +121,7 @@ def main():
             
             except rio.errors.RasterioIOError:
                 # If a radar map is missing it skips the time step
-                logging.warning("---> WARNING! Radar map " + time_now_rad.strftime("%Y-%m-%d %H:%M"))
+                logging.warning("---> WARNING! Radar map " + time_now_rad.strftime("%Y-%m-%d %H:%M") + " not found!")
                 pass
                 #missing_map = True
                 #logging.warning("---> WARNING! Radar map " + time_now.strftime("%Y-%m-%d %H:%M") + " is missing! Skip to next time step")
@@ -129,7 +129,7 @@ def main():
              
 
  #       if missing_map is True:
-        if counter<=4:
+        if counter<=data_settings['data']['dynamic']['radar']['min_step_acceptable']:
             continue
         else:
             da_radar.values = np.nan_to_num(rad_rain_value, copy=True, nan=-9999.0)

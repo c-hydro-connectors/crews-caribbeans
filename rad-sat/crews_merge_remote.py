@@ -81,14 +81,14 @@ def main():
     center_y = np.min(griglia.y.values) + ((np.max(griglia.y.values) - np.min(griglia.y.values)) / 2)
     distance = ((griglia_lon-center_x)**2+(griglia_lat-center_y)**2)**.5
     distance_km= distance/0.009                                  
-    pesi_rad=1-(distance_km*0.0025)
+    pesi_rad=1-(distance_km*0.004)
     pesi_rad[pesi_rad<0]=0   
     temp_rad=np.zeros(griglia.shape)
     temp_rad[0]=pesi_rad
     pesi_radar = griglia.copy()
     pesi_radar.values[0].astype(np.float32)
     pesi_radar.values=temp_rad
-    pesi_sat=distance_km*0.0025
+    pesi_sat=distance_km*0.004
     pesi_sat[pesi_sat>1]=1
     temp_sat=np.zeros(griglia.shape)
     temp_sat[0]=pesi_sat
@@ -109,10 +109,12 @@ def main():
         file_now_radar = os.path.join(data_settings['data']['dynamic']['input_rad']["folder"],data_settings['data']['dynamic']['input_rad']["filename"]).format(**template_filled)
         try:
             da_radar = rioxarray.open_rasterio(file_now_radar)
+            pesi_op_radar = pesi_radar.copy()
         except:
             logging.warning("---> WARNING! Radar map not exist" + time_now.strftime("%Y-%m-%d %H:%M"))      
             da_radar = griglia.copy()
             da_radar.values=np.zeros(griglia.shape)
+            pesi_op_radar = 0
 
         # rigriglio
         da_radar_grid = da_radar.reindex({'band': np.ones(1), 'x': griglia.x.values, 'y': griglia.y.values},
@@ -138,11 +140,13 @@ def main():
             try:
                 da_satellite = rioxarray.open_rasterio(file_now_sat)
                 da_satellite = da_satellite/2
+                pesi_op_satellite = pesi_satellite.copy()
             except:
-                logging.warning("---> WARNING! Satellite map not exist" + time_now.strftime("%Y-%m-%d %H:%M"))
+                logging.warning("---> WARNING! Satellite map not exist" + time_now.strftime("%Y-%m-%d %H:%M") + " : " + file_now_sat)
                 logging.info("FILE : " + file_now_sat)
                 da_satellite = griglia.copy()
                 da_satellite.values=np.zeros(griglia.shape)
+                pesi_op_satellite = 0
         
         # satelliti risoluzione 30min e prodotto finale risoluzione 30min                                        
         elif data_settings['data']['dynamic']['input_sat']["resolution"]=="30min" and data_settings['data']['dynamic']['time']['time_frequency']=="30min":
@@ -150,10 +154,12 @@ def main():
             try:
                 da_satellite = rioxarray.open_rasterio(file_now_sat)
                 da_satellite = da_satellite/2
+                pesi_op_satellite = pesi_satellite.copy()
             except:
-                logging.warning("---> WARNING! Satellite map not exist" + time_now.strftime("%Y-%m-%d %H:%M"))
+                logging.warning("---> WARNING! Satellite map not exist" + time_now.strftime("%Y-%m-%d %H:%M") + " : " + file_now_sat)
                 da_satellite = griglia.copy()
                 da_satellite.values=np.zeros(griglia.shape)
+                pesi_op_satellite = 0
 
         else:
             logging.error("--> ERROR! Only satellite products with 30min or 60min temporal resolution are supported!")
@@ -183,7 +189,7 @@ def main():
         remote = griglia.copy()
         #remote.values[0]=da_satellite_grid[0]*pesi_sat+da_radar[0]*pesi_rad                           
         remote.values[0].astype(np.float32)
-        remote.values=np.float32(da_satellite_grid*pesi_satellite+da_radar_grid*pesi_radar)
+        remote.values=np.float32(da_satellite_grid*pesi_op_satellite+da_radar_grid*pesi_op_radar)
                                      
         remote.rio.to_raster(os.path.join(data_settings['data']['dynamic']['outcome']["folder"],data_settings['data']['dynamic']['outcome']["filename"]).format(**template_filled), compress="DEFLATE", dtype="float32")
         logging.info("--> Preparing remote data...DONE")

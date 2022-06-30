@@ -1,0 +1,41 @@
+{
+  "flags": {
+    "clean_ancillary": false,
+    "plot_figures": false,
+    "compress_output": false
+  },
+  "name": "proj-crews",
+  "version": "1.0.0",
+  "template": {
+    "datetime_file_in": "%Y%m%d%H%M",
+    "datetime_folder_in": "%Y/%m/%d",
+    "datetime_file_out": "%Y%m%d%H%M",
+    "datetime_folder_out": "%Y/%m/%d"
+  },
+  "data": {
+    "dynamic":{
+      "time": {
+        "radar_frequency": "6min",
+        "time_observed_period_h": 0.5
+      },
+      "input": {
+        "folder": "/DATA/DPSRI/",
+        "filename": "{datetime_file_in}**00dBR.dpsri"
+      },
+      "output": {
+        "folder": "/DATA/crews/data_dynamic/radar/rainfall_map/{datetime_folder_out}",
+        "filename_nc": "{datetime_file_out}_rainrate.nc",
+	"filename_tif": "{datetime_file_out}_rainrate.tif",
+        "format": "tif"
+      },
+      "ancillary": {
+        "folder": "/DATA/crews/data_dynamic/radar/rainfall_map/ancillary/{datetime_folder_out}"
+      }
+    },
+    "log": {
+      "folder": "/home/silvestro/MSPG/op_chain/log/",
+      "filename": "crews_import_radar_rainfall_map.log"
+    }
+  }
+}
+

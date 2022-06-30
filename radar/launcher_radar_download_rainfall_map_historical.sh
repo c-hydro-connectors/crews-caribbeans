@@ -2,20 +2,10 @@
 
 #-----------------------------------------------------------------------------------------
 # Script information
-script_name='LAUNCHER - MULTI SATELLITE DOWNLOADER'
+script_name='LAUNCHER - RADAR RAIN MAP DOWNLOADER'
 script_version="1.0.0"
 script_date='2022/06/14'
 
-Help()
-{
-   # Display Help
-   echo "---------------------------------------------------"
-   echo "Download multiple satellite product for real-time purposes"
-   echo
-   echo "Syntax: ./launcher_sat_download_rt.sh --satellite {sat_name}"
-   echo "{sat_name} available: ghe, gsmap"
-   echo "---------------------------------------------------"
-}
 #-----------------------------------------------------------------------------------------
 
 #-----------------------------------------------------------------------------------------
@@ -26,27 +16,13 @@ file_lock_init=true
 #-----------------------------------------------------------------------------------------
 
 #-----------------------------------------------------------------------------------------
-# Managing inputs
-if [ $1 == "--satellite" ];
-    then type=$2; 
-    echo " --> Download satellite product: "$type
-elif  [ $1 == "-h" ]; 
-    then Help
-    exit
-else
-    echo " --> ERROR! Incorrect parameter/s provided. Use flag -h for help!"
-    exit
-fi
-#-----------------------------------------------------------------------------------------
-
-#-----------------------------------------------------------------------------------------
 # Get file information
 virtualenv_folder='/home/silvestro/fp_virtualenv_python3_hyde/'
 virtualenv_name='wradlib'
 
 script_folder=$system_library_folder'crews-caribbeans'
-script_file=$script_folder'/satellite/crews_import_satellite_data.py'
-settings_file=/home/silvestro/MSPG/op_chain/preprocessing/satellite/crews_import_satellite_data_$type.json
+script_file=$script_folder'/radar/crews_import_radar_data_rainfall_map.py'
+settings_file=/home/silvestro/MSPG/op_chain/preprocessing/radar/crews_import_radar_data_raifall_map.json
 
 # Get information (-u to get gmt time)
 time_now=$(date -u +"%Y-%m-%d %H:%M")
@@ -55,6 +31,14 @@ year=${time_now:0:4}
 month=${time_now:5:2}
 day=${time_now:8:2}
 hour=${time_now:11:2}
+mins=${time_now:14:2}
+
+if [ $mins -ge 30 ]
+then
+time_now=$(date -u +"%Y-%m-%d %H:30")
+else
+time_now=$(date -u +"%Y-%m-%d %H:00")
+fi
 #-----------------------------------------------------------------------------------------
 
 #-----------------------------------------------------------------------------------------
@@ -71,8 +55,8 @@ export PYTHONPATH="${PYTHONPATH}:$script_folder"
 
 #-----------------------------------------------------------------------------------------
     # Get lock information
-    file_lock_start_raw="download_${type}_lock_%YYYY%MM%DD_%HH_START.txt"
-    file_lock_end_raw="download_${type}_lock_%YYYY%MM%DD_%HH_END.txt"
+    file_lock_start_raw="downloader_${type}_lock_%YYYY%MM%DD_%HH_START.txt"
+    file_lock_end_raw="downloader_${type}_lock_%YYYY%MM%DD_%HH_END.txt"
 
     folder_lock_raw=$lock_folder'preprocessing/'
     

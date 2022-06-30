@@ -12,7 +12,7 @@
   "data": {
     "dynamic":{
       "time": {
-        "steps_observed": 96,
+        "steps_observed": 3,
         "time_frequency": "30min"
       },
       "drops2": {
@@ -35,12 +35,12 @@
         }
       },
       "outcome":{
-        "folder": "/mnt/storage/idrologia/data_dynamic/satellite/gsmap/{datetime_folder_out}",
-        "filename": "{datetime_file_out}_gsmap_RT.tif"
+        "folder": "/DATA/crews/data_dynamic/satellite/gsmap/{datetime_folder_out}",
+        "filename": "{datetime_file_out}_gsmap.tif"
       }
     },
     "log": {
-      "folder": "/home/idrologia/op_chain/log/",
+      "folder": "/home/silvestro/MSPG/op_chain/log/",
       "filename": "crews_import_satellite_gsmap_RT.log"
     }
   }
